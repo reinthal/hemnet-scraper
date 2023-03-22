@@ -67,7 +67,7 @@ def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
         return [m["href"] for m in matches]
     
     initial_hemnet_search_start_pages["listing_urls"] = initial_hemnet_search_start_pages["data"].apply(find_listing_url)
-    hemnet_search_links = initial_hemnet_search_start_pages.explode("listing_urls")
+    hemnet_search_links = initial_hemnet_search_start_pages.explode("listing_urls", ignore_index=True)
     metadata = {
         "num_records": len(hemnet_search_links),
         "preview": MetadataValue.md(hemnet_search_links[["listing_urls", "url", "reason", "date"]].to_markdown())
