@@ -73,3 +73,28 @@ def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
         "preview": MetadataValue.md(hemnet_search_links[["listing_urls", "url", "reason", "date"]].limit(20).to_markdown())
     }
     return Output(value=hemnet_search_links, metadata=metadata)
+
+@asset
+def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame):
+    logger = logging.getLogger("my_logger")
+    scraper = cs.create_scraper()
+    hemnet_search_links = hemnet_search_links.reset_index() 
+    hemnet_initial_search_links_webpages  = []
+    for i, row in hemnet_search_links.iterrows():
+        url = row["listing_urls"]
+        rightnow = datetime.now().strftime("%Y:%H:%M:%S")
+        print(f"{rightnow}: {i}, scraping '{url}'")
+        resp = scraper.get(url)
+        entry = {
+            "data": resp.text,
+            "url": row["listing_urls"],
+            "date": datetime.now(),
+            "reason": resp.reason
+        }
+        hemnet_initial_search_links_webpages.append(entry)
+    df = pd.DataFrame(hemnet_initial_search_links_webpages)
+    metadata = {
+        "num_records": len(df),
+        "preview": hemnet_initial_search_links_webpages[["url", "date", "reason"]].limit(20).to_markdown()
+    }
+    return Output(df, metadata=metadata)
