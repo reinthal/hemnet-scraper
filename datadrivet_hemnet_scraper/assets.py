@@ -34,15 +34,14 @@ def initial_hemnet_search_start_pages():
         }
         all_pages = [entry]
         for i in range(2, nr_pages+1):
-            next_page = HEMNET_SEARCH_BOSTADSRATTER_VG + f"&page_item={i}"
-            logger.info(f'{i} {next_page}')
+            next_page = HEMNET_SEARCH_BOSTADSRATTER_VG + f"&page_item={i}"            
             next_page_search = scraper.get(next_page)
             if not next_page_search.ok:
                 raise Exception(f"Something went wrong when searching for {next_page}. Reason {next_page_search.reason}")
             all_pages.append(
                 {
                     "data": next_page_search.text,
-                    "url": next_page_search,
+                    "url": next_page_search.url,
                     "server_headers": next_page_search.headers,
                     "status_code": search.status_code,
                     "reason": search.reason,
@@ -52,7 +51,7 @@ def initial_hemnet_search_start_pages():
         df = pd.DataFrame(all_pages)
         metadata = {
             "num_records": len(df),
-            "preview": MetadataValue.md(df[["data", "url", "reason", "date"]].to_markdown())
+            "preview": MetadataValue.md(df[["url", "reason", "date"]].to_markdown())
         }
         return Output(value=df, metadata=metadata)
     else:
