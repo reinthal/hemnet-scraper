@@ -1,0 +1,6 @@
+# tmp folder for dagster files
+tmp*
+
+
+# python stuff
+**__pycache__*
