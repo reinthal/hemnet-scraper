@@ -51,7 +51,7 @@ def initial_hemnet_search_start_pages():
         df = pd.DataFrame(all_pages)
         metadata = {
             "num_records": len(df),
-            "preview": MetadataValue.md(df[["url", "reason", "date"]].limit(20).to_markdown())
+            "preview": MetadataValue.md(df[["url", "reason", "date"]].head(20).to_markdown())
         }
         return Output(value=df, metadata=metadata)
     else:
@@ -70,7 +70,7 @@ def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
     hemnet_search_links = initial_hemnet_search_start_pages.explode("listing_urls", ignore_index=True)
     metadata = {
         "num_records": len(hemnet_search_links),
-        "preview": MetadataValue.md(hemnet_search_links[["listing_urls", "url", "reason", "date"]].limit(20).to_markdown())
+        "preview": MetadataValue.md(hemnet_search_links[["listing_urls", "url", "reason", "date"]].head(20).to_markdown())
     }
     return Output(value=hemnet_search_links, metadata=metadata)
 
@@ -95,6 +95,6 @@ def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame):
     df = pd.DataFrame(hemnet_initial_search_links_webpages)
     metadata = {
         "num_records": len(df),
-        "preview": hemnet_initial_search_links_webpages[["url", "date", "reason"]].limit(20).to_markdown()
+        "preview": df[["url", "date", "reason"]].head(20).to_markdown()
     }
     return Output(df, metadata=metadata)
