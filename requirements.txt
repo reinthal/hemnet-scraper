@@ -3,3 +3,4 @@ pandas
 dagster
 dagit
 bs4
+cloudscraper
