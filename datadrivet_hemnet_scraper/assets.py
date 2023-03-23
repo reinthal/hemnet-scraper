@@ -122,11 +122,15 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
             "location": location
         }
     entries = []
-    for _, row in hemnet_initial_search_links_webpages.iterrows():
+    for i, row in hemnet_initial_search_links_webpages.iterrows():
         entry = get_basic_data_from_html(row["data"])
+        price = entry["price"]
         entry["url"] = row["url"]
         entry["reason"] = row["reason"]
         entry["date"] = row["date"]
+        rightnow = datetime.now().strftime("%Y:%H:%M:%S")
+        print(f"{rightnow}: {i} Parsed: {price}")
+        entries.append(entry)
     df = pd.DataFrame(entries)
     metadata = {
         "num_records": len(df),
@@ -146,11 +150,14 @@ def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd
             entry[k] = v
         return entry
     entries = []
-    for _, row in hemnet_initial_search_links_webpages.iterrows():
+    for i, row in hemnet_initial_search_links_webpages.iterrows():
         entry = get_detailed_data_from_html(row["data"])
         entry["url"] = row["url"]
         entry["reason"] = row["reason"]
         entry["date"] = row["date"]
+        rightnow = datetime.now().strftime("%Y:%H:%M:%S")
+        current_url = entry["url"]
+        print(f"{rightnow}: {i} Parsed: {current_url}")
         entries.append(entry)
     df = pd.DataFrame(entries)
     metadata = {
