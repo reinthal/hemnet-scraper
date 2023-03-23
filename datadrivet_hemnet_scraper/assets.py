@@ -147,21 +147,11 @@ def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd
         # this parses the table on the main page of the listing
         # it includes some garbage data  which can be removed later
         for k,v in zip(s('dt'), s('dd')):
-            entry[k] = v
+            entry[k.get_text()] = v.get_text()
         return entry
-    entries = []
-    for i, row in hemnet_initial_search_links_webpages.iterrows():
-        entry = get_detailed_data_from_html(row["data"])
-        entry["url"] = row["url"]
-        entry["reason"] = row["reason"]
-        entry["date"] = row["date"]
-        rightnow = datetime.now().strftime("%Y:%H:%M:%S")
-        current_url = entry["url"]
-        print(f"{rightnow}: {i} Parsed: {current_url}")
-        entries.append(entry)
-    df = pd.DataFrame(entries)
+    hemnet_initial_search_links_webpages["data_as_json"] = hemnet_initial_search_links_webpages["data"].apply(get_detailed_data_from_html)
     metadata = {
-        "num_records": len(df),
-        "preview": df[list(df.columns[:4])].head(20).to_markdown()
+        "num_records": len(hemnet_initial_search_links_webpages),
+        "preview": hemnet_initial_search_links_webpages[["data_as_json", "url"]].head(20).to_markdown()
     }
-    return Output(value=df, metadata=metadata)
+    return Output(value=hemnet_initial_search_links_webpages, metadata=metadata)
