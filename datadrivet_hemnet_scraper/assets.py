@@ -104,9 +104,18 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
     """gets the pricing data from the final page"""
     def get_basic_data_from_html(html_text: str) -> dict():
         soup = BeautifulSoup(html_text, "html.parser")
-        price = soup.findAll("p", class_="property-info__price qa-property-price")[-1].get_text()
-        address = soup.find("h1", class_="qa-property-heading hcl-heading hcl-heading--size2").get_text()
-        location = soup.find("span", class_="property-address__area").get_text()
+        try:
+            price = soup.find("p", class_="property-info__price qa-property-price").get_text()
+        except AttributeError:
+            price = "" 
+        try:
+            address = soup.find("h1", class_="qa-property-heading hcl-heading hcl-heading--size2").get_text()
+        except AttributeError:
+            address = ""
+        try:
+            location = soup.find("span", class_="property-address__area").get_text()
+        except AttributeError:
+            location = ""
         return {
             "price": price,
             "address": address,
@@ -114,7 +123,7 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
         }
     entries = []
     for _, row in hemnet_initial_search_links_webpages.iterrows():
-        entry = get_basic_data_from_html(row["url"])
+        entry = get_basic_data_from_html(row["data"])
         entry["url"] = row["url"]
         entry["reason"] = row["reason"]
         entry["date"] = row["date"]
@@ -138,7 +147,7 @@ def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd
         return entry
     entries = []
     for _, row in hemnet_initial_search_links_webpages.iterrows():
-        entry = get_detailed_data_from_html(row["url"])
+        entry = get_detailed_data_from_html(row["data"])
         entry["url"] = row["url"]
         entry["reason"] = row["reason"]
         entry["date"] = row["date"]
