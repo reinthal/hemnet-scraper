@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 import cloudscraper as cs
 from dagster import MetadataValue, Output, asset, op
 from datetime import datetime
-import logging
 
 HEMNET_SEARCH_BOSTADSRATTER_VG = "https://www.hemnet.se/bostader?item_types[]=bostadsratt&location_ids[]=17755"
 
@@ -15,10 +14,14 @@ def initial_search_nr_pages(initial_hemnet_search_start_page):
      return int(matches[-2].get_text())
     
 
-@asset
-def initial_hemnet_search_start_pages():
-    logger = logging.getLogger('hemnet_logger')
-    """requests all bostadsrätter from hemnet for Västra Götalands Län"""
+@asset(metadata={
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+})
+def initial_hemnet_search_start_pages() -> pd.DataFrame:
+    """
+    This asset contains the urls for bostadsrätter on the first page of the following link
+    https://www.hemnet.se/bostader?item_types[]=bostadsratt&location_ids[]=17755
+    """
     scraper = cs.create_scraper()
     search = scraper.get(HEMNET_SEARCH_BOSTADSRATTER_VG)
     
@@ -57,7 +60,9 @@ def initial_hemnet_search_start_pages():
     else:
         raise Exception('Didnt get 200 back from server')
 
-@asset
+@asset(metadata={
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+})
 def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
     """takes all the start pages html and computes a new df with all links to pages"""
     
@@ -74,9 +79,11 @@ def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
     }
     return Output(value=hemnet_search_links, metadata=metadata)
 
-@asset
-def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame):
-    logger = logging.getLogger("my_logger")
+@asset(metadata={
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+})
+def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame) -> pd.DataFrame:
+    """contains a dataframe with urls from hemnet_search_links and the respective webpage html under the column `data`"""
     scraper = cs.create_scraper()
     hemnet_search_links = hemnet_search_links.reset_index() 
     hemnet_initial_search_links_webpages  = []
@@ -99,9 +106,11 @@ def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame):
     }
     return Output(df, metadata=metadata)
 
-@asset
-def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame):
-    """gets the pricing data from the final page"""
+@asset(metadata={
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+})
+def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame) -> pd.DataFrame:
+    """Gets the pricing data from the listing page, adds `price`, `address` and `location` for a given url"""
     def get_basic_data_from_html(html_text: str) -> dict():
         soup = BeautifulSoup(html_text, "html.parser")
         try:
@@ -138,8 +147,11 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
     }
     return Output(value=df, metadata=metadata)
 
-@asset
-def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame):
+@asset(metadata={
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+})
+def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame) -> pd.DataFrame:
+    """Contains various data like about the listing for each given url, parsed as json"""
     def get_detailed_data_from_html(html_text: str):
         soup = BeautifulSoup(html_text, "html.parser")
         s = soup.find("div", class_="property-attributes-table")
