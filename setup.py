@@ -5,7 +5,13 @@ setup(
     packages=find_packages(exclude=["datadrivet_hemnet_scraper_tests"]),
     install_requires=[
         "dagster",
-        "dagster-cloud"
+        "dagster-cloud",
+        "requests"
+        "pandas"
+        "dagster"
+        "dagit"
+        "bs4"
+        "cloudscraper"
     ],
     extras_require={"dev": ["dagit", "pytest"]},
 )
