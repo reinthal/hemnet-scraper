@@ -1,8 +1,9 @@
 import requests as rq
 import pandas as pd
-from bs4 import BeautifulSoup
 import cloudscraper as cs
-from dagster import MetadataValue, Output, asset, op
+
+from bs4 import BeautifulSoup
+from dagster import MetadataValue, Output, asset
 from datetime import datetime
 
 HEMNET_SEARCH_BOSTADSRATTER_VG = "https://www.hemnet.se/bostader?item_types[]=bostadsratt&location_ids[]=17755"
