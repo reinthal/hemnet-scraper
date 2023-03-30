@@ -135,20 +135,10 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
             "address": address,
             "location": location
         }
-    entries = []
-    for i, row in hemnet_initial_search_links_webpages.iterrows():
-        entry = get_basic_data_from_html(row["data"])
-        price = entry["price"]
-        entry["url"] = row["url"]
-        entry["reason"] = row["reason"]
-        entry["date"] = row["date"]
-        rightnow = datetime.now().strftime("%Y:%H:%M:%S")
-        print(f"{rightnow}: {i} Parsed: {price}")
-        entries.append(entry)
-    df = pd.DataFrame(entries)
+    df["basic_data_as_json"] = hemnet_initial_search_links_webpages["data"].apply(get_basic_data_from_html)
     metadata = {
         "num_records": len(df),
-        "preview": df[list(df.columns[:4])].head(20).to_markdown()
+        "preview": df[["price", "address", "location", "url"]].head(20).to_markdown() # Fetches first 4 columns to be displayed
     }
     return Output(value=df, metadata=metadata)
 
