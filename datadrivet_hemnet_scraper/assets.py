@@ -15,7 +15,8 @@ def initial_search_nr_pages(initial_hemnet_search_start_page):
     
 
 @asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
+    "slack": "##datadrivet-test-hemnet-data-owner"
 })
 def initial_hemnet_search_start_pages() -> pd.DataFrame:
     """
@@ -61,7 +62,8 @@ def initial_hemnet_search_start_pages() -> pd.DataFrame:
         raise Exception('Didnt get 200 back from server')
 
 @asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
+    "slack": "##datadrivet-test-hemnet-data-owner"
 })
 def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
     """takes all the start pages html and computes a new df with all links to pages"""
@@ -80,7 +82,8 @@ def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
     return Output(value=hemnet_search_links, metadata=metadata)
 
 @asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
+    "slack": "##datadrivet-test-hemnet-data-owner"
 })
 def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame) -> pd.DataFrame:
     """contains a dataframe with urls from hemnet_search_links and the respective webpage html under the column `data`"""
@@ -107,7 +110,8 @@ def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame) -> p
     return Output(df, metadata=metadata)
 
 @asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
+    "slack": "##datadrivet-test-hemnet-data-owner"
 })
 def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame) -> pd.DataFrame:
     """Gets the pricing data from the listing page, adds `price`, `address` and `location` for a given url"""
@@ -148,7 +152,8 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
     return Output(value=df, metadata=metadata)
 
 @asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com", 
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
+    "slack": "##datadrivet-test-hemnet-data-owner"
 })
 def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame) -> pd.DataFrame:
     """Contains various data like about the listing for each given url, parsed as json"""
