@@ -135,12 +135,12 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
             "address": address,
             "location": location
         }
-    df["basic_data_as_json"] = hemnet_initial_search_links_webpages["data"].apply(get_basic_data_from_html)
+    hemnet_initial_search_links_webpages["basic_data_as_json"] = hemnet_initial_search_links_webpages["data"].apply(get_basic_data_from_html)
     metadata = {
-        "num_records": len(df),
-        "preview": df[["price", "address", "location", "url"]].head(20).to_markdown() # Fetches first 4 columns to be displayed
+        "num_records": len(hemnet_initial_search_links_webpages),
+        "preview": hemnet_initial_search_links_webpages[["price", "address", "location", "url"]].head(20).to_markdown() # Fetches first 4 columns to be displayed
     }
-    return Output(value=df, metadata=metadata)
+    return Output(value=hemnet_initial_search_links_webpages, metadata=metadata)
 
 @asset(metadata={
     "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
