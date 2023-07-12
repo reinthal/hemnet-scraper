@@ -7,7 +7,10 @@ from dagster import MetadataValue, Output, asset
 from datetime import datetime
 
 HEMNET_SEARCH_BOSTADSRATTER_VG = "https://www.hemnet.se/bostader?item_types[]=bostadsratt&location_ids[]=17755"
-
+METADATA = {
+    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
+    "slack": "#datadrivet-test-hemnet-data-owner"
+}
 
 def initial_search_nr_pages(initial_hemnet_search_start_page):
      soup = BeautifulSoup(initial_hemnet_search_start_page, 'html.parser')
@@ -15,11 +18,8 @@ def initial_search_nr_pages(initial_hemnet_search_start_page):
      return int(matches[-2].get_text())
     
 
-@asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
-    "slack": "#datadrivet-test-hemnet-data-owner"
-})
-def initial_hemnet_search_start_pages() -> pd.DataFrame:
+@asset(metadata=METADATA)
+def initial_hemnet_search_start_pages() -> Output:
     """
     This asset contains the urls for bostadsrätter on the first page of the following link
     https://www.hemnet.se/bostader?item_types[]=bostadsratt&location_ids[]=17755
@@ -54,6 +54,7 @@ def initial_hemnet_search_start_pages() -> pd.DataFrame:
                 }
             )
         df = pd.DataFrame(all_pages)
+        print("#### got all pages! #####")
         metadata = {
             "num_records": len(df),
             "preview": MetadataValue.md(df[["url", "reason", "date"]].head(20).to_markdown())
@@ -62,11 +63,8 @@ def initial_hemnet_search_start_pages() -> pd.DataFrame:
     else:
         raise Exception('Didnt get 200 back from server')
 
-@asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
-    "slack": "#datadrivet-test-hemnet-data-owner"
-})
-def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
+@asset(metadata=METADATA)
+def hemnet_search_links(initial_hemnet_search_start_pages: Output):
     """takes all the start pages html and computes a new df with all links to pages"""
     
     def find_listing_url(html_text):
@@ -82,11 +80,8 @@ def hemnet_search_links(initial_hemnet_search_start_pages: pd.DataFrame):
     }
     return Output(value=hemnet_search_links, metadata=metadata)
 
-@asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
-    "slack": "#datadrivet-test-hemnet-data-owner"
-})
-def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame) -> pd.DataFrame:
+@asset(metadata=METADATA)
+def hemnet_initial_search_links_webpages(hemnet_search_links: Output) -> Output:
     """contains a dataframe with urls from hemnet_search_links and the respective webpage html under the column `data`"""
     scraper = cs.create_scraper()
     hemnet_search_links = hemnet_search_links.reset_index() 
@@ -110,11 +105,10 @@ def hemnet_initial_search_links_webpages(hemnet_search_links: pd.DataFrame) -> p
     }
     return Output(df, metadata=metadata)
 
-@asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
-    "slack": "#datadrivet-test-hemnet-data-owner"
-})
-def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame) -> pd.DataFrame:
+
+
+@asset(metadata=METADATA)
+def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: Output) -> Output:
     """Gets the pricing data from the listing page, adds `price`, `address` and `location` for a given url"""
     def get_basic_data_from_html(html_text: str) -> dict():
         soup = BeautifulSoup(html_text, "html.parser")
@@ -135,18 +129,22 @@ def hemnet_search_basic_listing_data(hemnet_initial_search_links_webpages: pd.Da
             "address": address,
             "location": location
         }
-    hemnet_initial_search_links_webpages["basic_data_as_json"] = hemnet_initial_search_links_webpages["data"].apply(get_basic_data_from_html)
+    hemnet_initial_search_links_webpages["data_as_json"] = hemnet_initial_search_links_webpages["data"].apply(get_basic_data_from_html)
+    hemnet_initial_search_links_webpages = explode_json(hemnet_initial_search_links_webpages)
     metadata = {
         "num_records": len(hemnet_initial_search_links_webpages),
-        "preview": hemnet_initial_search_links_webpages[["price", "address", "location", "url"]].head(20).to_markdown() # Fetches first 4 columns to be displayed
+       # "preview": hemnet_initial_search_links_webpages[hemnet_initial_search_links_webpages.columns[:3]].head(4).to_markdown() # Fetches first 4 columns to be displayed
     }
     return Output(value=hemnet_initial_search_links_webpages, metadata=metadata)
 
-@asset(metadata={
-    "owner": "datadrivet-test-hemne-aaaajfyiclh3cwe5dzyxjypxvi@knowitcocreate.slack.com",
-    "slack": "#datadrivet-test-hemnet-data-owner"
-})
-def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd.DataFrame) -> pd.DataFrame:
+def explode_json(df: pd.DataFrame) -> pd.DataFrame:
+    new_data = pd.json_normalize(df["data_as_json"])
+    new_columns = new_data.columns
+    df[new_columns] = new_data
+    return df.drop(columns=["data_as_json"])
+
+@asset(metadata=METADATA)
+def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: Output) -> Output:
     """Contains various data like about the listing for each given url, parsed as json"""
     def get_detailed_data_from_html(html_text: str):
         soup = BeautifulSoup(html_text, "html.parser")
@@ -158,8 +156,10 @@ def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: pd
             entry[k.get_text()] = v.get_text()
         return entry
     hemnet_initial_search_links_webpages["data_as_json"] = hemnet_initial_search_links_webpages["data"].apply(get_detailed_data_from_html)
+    hemnet_initial_search_links_webpages = explode_json(hemnet_initial_search_links_webpages)
+    columns = hemnet_initial_search_links_webpages.columns
     metadata = {
         "num_records": len(hemnet_initial_search_links_webpages),
-        "preview": hemnet_initial_search_links_webpages[["data_as_json", "url"]].head(20).to_markdown()
+        "preview": hemnet_initial_search_links_webpages[["url"]].head(5).to_markdown()
     }
     return Output(value=hemnet_initial_search_links_webpages, metadata=metadata)
