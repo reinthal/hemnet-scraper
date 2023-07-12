@@ -6,11 +6,11 @@ setup(
     install_requires=[
         "dagster",
         "dagster-cloud",
-        "requests"
-        "pandas"
-        "dagster"
-        "dagit"
-        "bs4"
+        "requests",
+        "pandas",
+        "dagster",
+        "dagit",
+        "bs4",
         "cloudscraper"
     ],
     extras_require={"dev": ["dagit", "pytest"]},

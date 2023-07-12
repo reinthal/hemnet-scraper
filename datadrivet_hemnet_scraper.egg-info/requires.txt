@@ -5,6 +5,7 @@ pandas
 dagster
 dagit
 bs4
+cloudscraper
 
 [dev]
 dagit
