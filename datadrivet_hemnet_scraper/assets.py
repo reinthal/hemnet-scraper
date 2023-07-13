@@ -3,7 +3,7 @@ import pandas as pd
 import cloudscraper as cs
 
 from bs4 import BeautifulSoup
-from dagster import MetadataValue, Output, asset
+from dagster import MetadataValue, Output, asset, AssetIn
 from datetime import datetime
 
 HEMNET_SEARCH_BOSTADSRATTER_VG = "https://www.hemnet.se/bostader?item_types[]=bostadsratt&location_ids[]=17755"
@@ -163,3 +163,19 @@ def hemnet_search_detailed_listing_data(hemnet_initial_search_links_webpages: Ou
         "preview": hemnet_initial_search_links_webpages[["url"]].head(5).to_markdown()
     }
     return Output(value=hemnet_initial_search_links_webpages, metadata=metadata)
+
+@asset(metadata=METADATA, 
+    ins={
+        "hemnet_search_detailed_listing_data": AssetIn("hemnet_search_detailed_listing_data"),
+        "hemnet_search_basic_listing_data": AssetIn("hemnet_search_basic_listing_data")
+    }
+)
+def hemnet_search_all_data(hemnet_search_detailed_listing_data, hemnet_search_basic_listing_data) -> Output:
+    """joins the detailed and basic data together to one pandas dataframe"""
+    joined_df = pd.concat([hemnet_search_basic_listing_data, hemnet_search_detailed_listing_data], axis=1, join="outer")
+    metadata = {
+        "num_records": len(joined_df),
+        "num_columns": len(joined_df.columns),
+        "preview": joined_df.head(5).to_markdown()
+    }
+    return Output(value=joined_df, metadata=metadata)

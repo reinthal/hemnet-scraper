@@ -11,7 +11,10 @@ setup(
         "dagster",
         "dagit",
         "bs4",
-        "cloudscraper"
+        "cloudscraper",
+        "jupyterlab",
+        "plotly",
+        "matplotlib"
     ],
     extras_require={"dev": ["dagit", "pytest"]},
 )

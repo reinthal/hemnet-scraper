@@ -6,6 +6,9 @@ dagster
 dagit
 bs4
 cloudscraper
+jupyterlab
+plotly
+matplotlib
 
 [dev]
 dagit
