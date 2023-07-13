@@ -1,5 +1,11 @@
 # datadrivet_hemnet_scraper
 
+The main analysis for this project can be found in the notebook called `analysis.ipynb`.
+
+In this project I used Dagster, which is a data orchestration tool, to break up the different data transformation that I was doing during the scraping. It worked really well for this application as I would not have to re-run the entire pipeline when I discovered an error in one of the steps I was doing. This was especially helpful when fetching the data would take up to 20 minutes, with a traditional script, I would have to rerun that entire 20 minutes of scraping everytime I would discover an error. Pretty neat!
+
+# Dagster Docs
+
 This is a [Dagster](https://dagster.io/) project scaffolded with [`dagster project scaffold`](https://docs.dagster.io/getting-started/create-new-project).
 
 ## Getting started
